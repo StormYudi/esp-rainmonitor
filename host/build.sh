@@ -27,15 +27,15 @@ for t in "${targets[@]}"; do
   # macOS BLE needs CGO/CoreBluetooth. Windows BLE is WinRT and cross-compiles
   # with CGO off. Linux BLE still needs a native BlueZ build.
   cgo=0
-  tags=()
+  tags=""
   host_os="$(uname -s)"
   host_arch="$(go env GOARCH)"
   if [[ "$os" == darwin && "$host_os" == Darwin && "$arch" == "$host_arch" ]]; then
     cgo=1
   elif [[ "$os" != windows ]]; then
-    tags=(-tags nobile)
+    tags="-tags=nobile"
   fi
-  CGO_ENABLED="$cgo" GOOS="$os" GOARCH="$arch" go build -C "$ROOT" -trimpath -ldflags="-s -w" "${tags[@]}" -o "$dest" .
+  CGO_ENABLED="$cgo" GOOS="$os" GOARCH="$arch" go build -C "$ROOT" -trimpath -ldflags="-s -w" ${tags:+$tags} -o "$dest" .
 done
 
 echo "$OUT"
