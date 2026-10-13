@@ -1,0 +1,5 @@
+dependencies:
+  idf: ">=6.1,<6.2"
+  espressif/esp_lcd_co5300: "2.1.0"
+  espressif/esp_tinyusb: "2.2.0"
+  espressif/esp_lcd_touch_cst9220: "^0.1.1"

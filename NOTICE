@@ -1,0 +1,12 @@
+This project includes display initialization and TE-synchronized transfer
+logic adapted from:
+
+- eMUQI/esp-mosaico-fluidbox (MIT)
+- esp-mosaico/esp-mosaico-bsp (Apache-2.0)
+
+The top-right connection and battery status treatment follows the published
+AMOLED UI guidelines of eMUQI/QuotaFrame. That project is MPL-2.0; this
+repository reimplements the status bar instead of copying its source.
+
+The CO5300 panel command sequence is subject to the Apache-2.0 license.
+See licenses/Apache-2.0.txt if redistributing that portion.

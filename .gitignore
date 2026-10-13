@@ -1,0 +1,14 @@
+build/
+dist/
+managed_components/
+sdkconfig
+sdkconfig.old
+dependencies.lock
+.cache/
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+host/.venv/
+host/rainmonitor
+host/rainmonitor.exe
