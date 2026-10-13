@@ -135,6 +135,9 @@ func installArgv(cfg collectorConfig) []string {
 }
 
 func installService(cfg collectorConfig) error {
+	if runtime.GOOS == "darwin" {
+		return installDarwin(cfg)
+	}
 	if processElevated() {
 		return installServiceAs(cfg, false)
 	}
@@ -170,9 +173,13 @@ func installServiceAs(cfg collectorConfig, userLevel bool) (err error) {
 	if err != nil {
 		return err
 	}
-	if st, err := s.Status(); err == nil && (st == service.StatusRunning || st == service.StatusStopped) {
-		_ = s.Stop()
-		if err := s.Uninstall(); err != nil {
+	if existing := detectService(); existing.Installed {
+		_ = stopInstalledService(s, existing.UserLevel)
+		old, err := newHostService(cfg, dest, existing.UserLevel)
+		if err != nil {
+			return err
+		}
+		if err := old.Uninstall(); err != nil {
 			return fmt.Errorf("无法覆盖已有服务: %w", err)
 		}
 	}
@@ -186,7 +193,7 @@ func installServiceAs(cfg collectorConfig, userLevel bool) (err error) {
 	if userLevel && runtime.GOOS == "linux" {
 		enableLinger()
 	}
-	if err := s.Start(); err != nil {
+	if err := startInstalledService(s, userLevel); err != nil {
 		return fmt.Errorf("服务已安装，但启动失败: %w", err)
 	}
 	kind := "系统服务（开机自动启动）"
@@ -231,7 +238,7 @@ func uninstallServiceAs(cfg collectorConfig, userLevel bool) (err error) {
 	if err != nil {
 		return err
 	}
-	_ = s.Stop()
+	_ = stopInstalledService(s, userLevel)
 	if err := s.Uninstall(); err != nil {
 		return fmt.Errorf("卸载服务失败: %w", err)
 	}
@@ -261,6 +268,21 @@ func lookupInstalledService() (service.Service, bool, error) {
 		return nil, false, err
 	}
 	return s, info.UserLevel, nil
+}
+
+func startInstalledService(s service.Service, userLevel bool) error {
+	if runtime.GOOS == "darwin" {
+		return darwinBootstrap(userLevel)
+	}
+	return s.Start()
+}
+
+func stopInstalledService(s service.Service, userLevel bool) error {
+	if runtime.GOOS == "darwin" {
+		darwinBootout(userLevel)
+		return nil
+	}
+	return s.Stop()
 }
 
 func runAsService(cfg collectorConfig) error {
